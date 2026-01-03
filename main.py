@@ -1,21 +1,24 @@
 import asyncio
-from bybit_data import fetch_ohlcv
+from okx_data import fetch_ohlcv
 from strategy import check_signal
 from trade_manager import register_trade, check_trade
 from telegram_bot import send_signal, send_hit
 from config import SYMBOLS, TIMEFRAME, SCAN_DELAY
 
 async def run():
-    print("🚀 FINAL Bybit Bot Running")
+    print("🚀 OKX Bot Running")
 
     while True:
         for s in SYMBOLS:
             df = fetch_ohlcv(s, TIMEFRAME)
-            if df is None: continue
+            if df is None: 
+                continue
 
             price = df.iloc[-1]["close"]
+
             r = check_trade(s, price)
-            if r: await send_hit(s, r)
+            if r:
+                await send_hit(s, r)
 
             sig = check_signal(df)
             if sig:
