@@ -1,14 +1,13 @@
 import requests
 import pandas as pd
 
-BASE_URL = "https://api.bybit.com"
+BASE_URL = "https://www.okx.com"
 
-def fetch_ohlcv(symbol, interval="5", limit=200):
-    url = f"{BASE_URL}/v5/market/kline"
+def fetch_ohlcv(symbol, timeframe="5m", limit=200):
+    url = f"{BASE_URL}/api/v5/market/candles"
     params = {
-        "category": "linear",
-        "symbol": symbol,
-        "interval": interval,
+        "instId": symbol,
+        "bar": timeframe,
         "limit": limit
     }
 
@@ -17,14 +16,15 @@ def fetch_ohlcv(symbol, interval="5", limit=200):
         r.raise_for_status()
         data = r.json()
 
-        if data["retCode"] != 0:
+        if data["code"] != "0":
             return None
 
-        rows = data["result"]["list"]
-        rows.reverse()  # oldest → newest
+        rows = data["data"]
+        rows.reverse()
 
         df = pd.DataFrame(rows, columns=[
-            "time","open","high","low","close","volume","turnover"
+            "time","open","high","low","close",
+            "volume","volumeCcy","volumeCcyQuote","confirm"
         ])
 
         df = df[["time","open","high","low","close","volume"]].astype(float)
