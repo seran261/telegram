@@ -13,7 +13,7 @@ def check_signal(df):
     liq_high = df["high"].rolling(LIQ_LOOKBACK).max().iloc[-2]
     liq_low  = df["low"].rolling(LIQ_LOOKBACK).min().iloc[-2]
 
-    # BUY
+    # ===== BUY =====
     if last["low"] < liq_low and last["close"] > last["ema"] and last["close"] > last["open"]:
         entry = last["close"]
         sl = liq_low
@@ -22,7 +22,7 @@ def check_signal(df):
         tp2 = entry + (tp3 - entry) * 0.6
         return ("BUY", entry, sl, [tp1, tp2, tp3])
 
-    # SELL
+    # ===== SELL =====
     if last["high"] > liq_high and last["close"] < last["ema"] and last["close"] < last["open"]:
         entry = last["close"]
         sl = liq_high
