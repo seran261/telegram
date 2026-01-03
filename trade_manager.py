@@ -1,36 +1,20 @@
 active_trades = {}
 
-def register_trade(symbol, side, entry, sl, tps):
-    active_trades[symbol] = {
-        "side": side,
-        "sl": sl,
-        "tps": tps,
-        "hit": [False, False, False]
-    }
+def register_trade(symbol, side, sl, tps):
+    active_trades[symbol] = {"side": side, "sl": sl, "tps": tps, "hit":[0,0,0]}
 
 def check_trade(symbol, price):
-    trade = active_trades.get(symbol)
-    if not trade:
+    t = active_trades.get(symbol)
+    if not t:
         return None
 
-    side = trade["side"]
-
-    # SL HIT
-    if (side == "BUY" and price <= trade["sl"]) or \
-       (side == "SELL" and price >= trade["sl"]):
+    if (t["side"]=="BUY" and price<=t["sl"]) or (t["side"]=="SELL" and price>=t["sl"]):
         del active_trades[symbol]
         return "SL"
 
-    # TP HIT
-    for i, tp in enumerate(trade["tps"]):
-        if trade["hit"][i]:
-            continue
-
-        if (side == "BUY" and price >= tp) or \
-           (side == "SELL" and price <= tp):
-            trade["hit"][i] = True
-            if i == 2:
-                del active_trades[symbol]
-            return f"TP{i+1}"
-
-    return None
+    for i,tp in enumerate(t["tps"]):
+        if not t["hit"][i]:
+            if (t["side"]=="BUY" and price>=tp) or (t["side"]=="SELL" and price<=tp):
+                t["hit"][i]=1
+                if i==2: del active_trades[symbol]
+                return f"TP{i+1}"
