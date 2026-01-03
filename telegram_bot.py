@@ -4,14 +4,14 @@ from telegram import Bot
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-if not TOKEN:
-    raise RuntimeError("❌ TELEGRAM_TOKEN not found in environment variables")
+if not TOKEN or not CHAT_ID:
+    raise RuntimeError("Telegram environment variables missing")
 
 bot = Bot(token=TOKEN)
 
 async def send_signal(symbol, side, entry, tp, sl):
     message = f"""
-🚨 *{side} SIGNAL* 🚨
+🚨 *{side} SIGNAL*
 🪙 {symbol}
 
 📍 Entry: {entry:.4f}
