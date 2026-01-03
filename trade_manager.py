@@ -16,13 +16,13 @@ def check_trade(symbol, price):
 
     side = trade["side"]
 
-    # SL HIT
+    # SL
     if (side == "BUY" and price <= trade["sl"]) or \
        (side == "SELL" and price >= trade["sl"]):
         del active_trades[symbol]
         return "SL"
 
-    # TP HIT
+    # TPs
     for i, tp in enumerate(trade["tps"]):
         if trade["hit"][i]:
             continue
