@@ -1,8 +1,13 @@
 import os
 from telegram import Bot
 
-bot = Bot(token=os.getenv("TELEGRAM_TOKEN"))
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+if not TOKEN or not CHAT_ID:
+    raise RuntimeError("Telegram env variables missing")
+
+bot = Bot(token=TOKEN)
 
 async def send_signal(symbol, side, entry, sl, tps):
     msg = f"""
