@@ -26,26 +26,29 @@ def check_signal(df):
     recent_low  = df["low"].rolling(LIQ_LOOKBACK).min().iloc[-3]
 
     # =====================
-    # VOLUME SPIKE FILTER
+    # VOLUME SPIKE (RELAXED)
     # =====================
-    volume_spike = last["volume"] > last["vol_avg"] * 1.5
+    volume_spike = last["volume"] > last["vol_avg"] * 1.2
 
     # =====================
-    # 🟢 BUY — BREAK & RETEST
+    # 🟢 BUY — BREAK & RETEST (ZONE BASED)
     # =====================
     breakout_up = prev["close"] > recent_high
-    retest_up   = last["low"] <= recent_high and last["close"] > recent_high
+    retest_up = (
+        last["low"] <= recent_high * 1.003 and   # zone retest
+        last["close"] > recent_high
+    )
 
     if (
         breakout_up and
         retest_up and
-        last["close"] > df["ema"].iloc[-3] and
+        last["close"] > df["ema"].iloc[-5] and   # trend bias
         last["close"] > last["open"] and
         volume_spike
     ):
         entry = last["close"]
 
-        # SCALP = tight SL | SWING = wider SL
+        # SL: SCALP tight | SWING wide
         sl = recent_high * (0.998 if EMA_LENGTH <= 50 else 0.995)
 
         tp3 = entry + (entry - sl) * RR_RATIO
@@ -55,21 +58,24 @@ def check_signal(df):
         return ("BUY", entry, sl, [tp1, tp2, tp3])
 
     # =====================
-    # 🔴 SELL — BREAK & RETEST
+    # 🔴 SELL — BREAK & RETEST (ZONE BASED)
     # =====================
     breakout_down = prev["close"] < recent_low
-    retest_down   = last["high"] >= recent_low and last["close"] < recent_low
+    retest_down = (
+        last["high"] >= recent_low * 0.997 and
+        last["close"] < recent_low
+    )
 
     if (
         breakout_down and
         retest_down and
-        last["close"] < df["ema"].iloc[-3] and
+        last["close"] < df["ema"].iloc[-5] and
         last["close"] < last["open"] and
         volume_spike
     ):
         entry = last["close"]
 
-        # SCALP = tight SL | SWING = wider SL
+        # SL: SCALP tight | SWING wide
         sl = recent_low * (1.002 if EMA_LENGTH <= 50 else 1.005)
 
         tp3 = entry - (sl - entry) * RR_RATIO
