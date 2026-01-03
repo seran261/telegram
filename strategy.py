@@ -4,7 +4,9 @@ def ema(series, length):
     return series.ewm(span=length).mean()
 
 def check_signal(df):
-    # Safety check
+    # =====================
+    # SAFETY CHECK
+    # =====================
     if df is None or len(df) < 80:
         return None
 
@@ -29,7 +31,7 @@ def check_signal(df):
     volume_spike = last["volume"] > last["vol_avg"] * 1.5
 
     # =====================
-    # 🟢 BUY: BREAK & RETEST
+    # 🟢 BUY — BREAK & RETEST
     # =====================
     breakout_up = prev["close"] > recent_high
     retest_up   = last["low"] <= recent_high and last["close"] > recent_high
@@ -42,16 +44,18 @@ def check_signal(df):
         volume_spike
     ):
         entry = last["close"]
-        sl = recent_high * 0.998  # SL buffer
-        tp3 = entry + (entry - sl) * RR_RATIO
 
+        # SCALP = tight SL | SWING = wider SL
+        sl = recent_high * (0.998 if EMA_LENGTH <= 50 else 0.995)
+
+        tp3 = entry + (entry - sl) * RR_RATIO
         tp1 = entry + (tp3 - entry) * 0.3
         tp2 = entry + (tp3 - entry) * 0.6
 
         return ("BUY", entry, sl, [tp1, tp2, tp3])
 
     # =====================
-    # 🔴 SELL: BREAK & RETEST
+    # 🔴 SELL — BREAK & RETEST
     # =====================
     breakout_down = prev["close"] < recent_low
     retest_down   = last["high"] >= recent_low and last["close"] < recent_low
@@ -64,9 +68,11 @@ def check_signal(df):
         volume_spike
     ):
         entry = last["close"]
-        sl = recent_low * 1.002
-        tp3 = entry - (sl - entry) * RR_RATIO
 
+        # SCALP = tight SL | SWING = wider SL
+        sl = recent_low * (1.002 if EMA_LENGTH <= 50 else 1.005)
+
+        tp3 = entry - (sl - entry) * RR_RATIO
         tp1 = entry - (entry - tp3) * 0.3
         tp2 = entry - (entry - tp3) * 0.6
 
