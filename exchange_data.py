@@ -1,10 +1,10 @@
 import ccxt
 import pandas as pd
 
-exchange = ccxt.binanceusdm({
+exchange = ccxt.okx({
     "enableRateLimit": True,
     "options": {
-        "defaultType": "future"
+        "defaultType": "swap"
     }
 })
 
@@ -17,5 +17,5 @@ def fetch_ohlcv(symbol, timeframe="5m", limit=200):
         )
         return df
     except Exception as e:
-        print(f"Fetch error {symbol}: {e}")
+        print(f"[FETCH ERROR] {symbol}: {e}")
         return None
