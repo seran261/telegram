@@ -4,33 +4,72 @@ def ema(series, length):
     return series.ewm(span=length).mean()
 
 def check_signal(df):
-    if df is None or len(df) < 60:
+    # Safety check
+    if df is None or len(df) < 80:
         return None
 
+    # =====================
+    # INDICATORS
+    # =====================
     df["ema"] = ema(df["close"], EMA_LENGTH)
+    df["vol_avg"] = df["volume"].rolling(20).mean()
+
     last = df.iloc[-1]
+    prev = df.iloc[-2]
 
-    liq_high = df["high"].rolling(LIQ_LOOKBACK).max().iloc[-2]
-    liq_low  = df["low"].rolling(LIQ_LOOKBACK).min().iloc[-2]
+    # =====================
+    # STRUCTURE LEVELS
+    # =====================
+    recent_high = df["high"].rolling(LIQ_LOOKBACK).max().iloc[-3]
+    recent_low  = df["low"].rolling(LIQ_LOOKBACK).min().iloc[-3]
 
-    if last["low"] < liq_low and last["close"] > last["ema"] and last["close"] > last["open"]:
+    # =====================
+    # VOLUME SPIKE FILTER
+    # =====================
+    volume_spike = last["volume"] > last["vol_avg"] * 1.5
+
+    # =====================
+    # 🟢 BUY: BREAK & RETEST
+    # =====================
+    breakout_up = prev["close"] > recent_high
+    retest_up   = last["low"] <= recent_high and last["close"] > recent_high
+
+    if (
+        breakout_up and
+        retest_up and
+        last["close"] > df["ema"].iloc[-3] and
+        last["close"] > last["open"] and
+        volume_spike
+    ):
         entry = last["close"]
-        sl = liq_low
+        sl = recent_high * 0.998  # SL buffer
         tp3 = entry + (entry - sl) * RR_RATIO
-        return ("BUY", entry, sl, [
-            entry + (tp3-entry)*0.3,
-            entry + (tp3-entry)*0.6,
-            tp3
-        ])
 
-    if last["high"] > liq_high and last["close"] < last["ema"] and last["close"] < last["open"]:
+        tp1 = entry + (tp3 - entry) * 0.3
+        tp2 = entry + (tp3 - entry) * 0.6
+
+        return ("BUY", entry, sl, [tp1, tp2, tp3])
+
+    # =====================
+    # 🔴 SELL: BREAK & RETEST
+    # =====================
+    breakout_down = prev["close"] < recent_low
+    retest_down   = last["high"] >= recent_low and last["close"] < recent_low
+
+    if (
+        breakout_down and
+        retest_down and
+        last["close"] < df["ema"].iloc[-3] and
+        last["close"] < last["open"] and
+        volume_spike
+    ):
         entry = last["close"]
-        sl = liq_high
+        sl = recent_low * 1.002
         tp3 = entry - (sl - entry) * RR_RATIO
-        return ("SELL", entry, sl, [
-            entry - (entry-tp3)*0.3,
-            entry - (entry-tp3)*0.6,
-            tp3
-        ])
+
+        tp1 = entry - (entry - tp3) * 0.3
+        tp2 = entry - (entry - tp3) * 0.6
+
+        return ("SELL", entry, sl, [tp1, tp2, tp3])
 
     return None
