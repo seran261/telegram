@@ -1,0 +1,32 @@
+# ===== BOT SETTINGS =====
+
+TIMEFRAME = "5m"
+RR_RATIO = 2.5
+EMA_LENGTH = 50
+LIQ_LOOKBACK = 12
+
+SCAN_DELAY = 60  # seconds
+
+# ===== OKX SYMBOLS (TOP 20) =====
+SYMBOLS = [
+    "BTC-USDT-SWAP",
+    "ETH-USDT-SWAP",
+    "SOL-USDT-SWAP",
+    "BNB-USDT-SWAP",
+    "XRP-USDT-SWAP",
+    "ADA-USDT-SWAP",
+    "AVAX-USDT-SWAP",
+    "DOGE-USDT-SWAP",
+    "DOT-USDT-SWAP",
+    "LINK-USDT-SWAP",
+    "MATIC-USDT-SWAP",
+    "TRX-USDT-SWAP",
+    "ATOM-USDT-SWAP",
+    "LTC-USDT-SWAP",
+    "OP-USDT-SWAP",
+    "AR-USDT-SWAP",
+    "INJ-USDT-SWAP",
+    "APT-USDT-SWAP",
+    "NEAR-USDT-SWAP",
+    "FIL-USDT-SWAP",
+]
