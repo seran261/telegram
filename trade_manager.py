@@ -3,7 +3,6 @@ active_trades = {}
 def register_trade(symbol, side, entry, sl, tps):
     active_trades[symbol] = {
         "side": side,
-        "entry": entry,
         "sl": sl,
         "tps": tps,
         "hit": [False, False, False]
@@ -16,16 +15,17 @@ def check_trade(symbol, price):
 
     side = trade["side"]
 
-    # SL
+    # SL HIT
     if (side == "BUY" and price <= trade["sl"]) or \
        (side == "SELL" and price >= trade["sl"]):
         del active_trades[symbol]
         return "SL"
 
-    # TPs
+    # TP HIT
     for i, tp in enumerate(trade["tps"]):
         if trade["hit"][i]:
             continue
+
         if (side == "BUY" and price >= tp) or \
            (side == "SELL" and price <= tp):
             trade["hit"][i] = True
